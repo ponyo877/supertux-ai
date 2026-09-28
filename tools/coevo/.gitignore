@@ -16,5 +16,7 @@ tables/*
 # Reacting to badguys that come close, as a table and as a learned model.
 !tables/tux-r1.js
 !tables/tux-m1.json
+# A model learned only from ways played to the goal (tux-expert.mjs).
+!tables/tux-x1.json
 !tables/tux-h15.js
 !tables/enemy-h16.js

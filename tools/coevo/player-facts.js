@@ -178,7 +178,11 @@
   const KIND_CODE = { mrbomb: 1, jumpy: 2 };
   const FEATURES = ["vx", "vy", "ground", "big", "x", "y", "wall_r", "wall_h", "gap_r", "gap_w", "spikes_r",
                     "ledge", "ledge_dx", "ledge_dy",
-                    ...[1, 2, 3].flatMap((n) => [`e${n}_dx`, `e${n}_dy`, `e${n}_vx`, `e${n}_vy`, `e${n}_kind`])];
+                    ...[1, 2, 3].flatMap((n) => [`e${n}_dx`, `e${n}_dy`, `e${n}_vx`, `e${n}_vy`, `e${n}_kind`]),
+                    // Added later (older models read only what comes before):
+                    // how soon the nearest badguy reaches Tux across and
+                    // up or down, at the speeds both have (FAR if not).
+                    "e1_tx", "e1_ty"];
 
   function features(b) {
     const far = (v) => (v < 0 ? FAR : v);
@@ -190,6 +194,11 @@
       const e = near[n];
       out.push(...(e ? [e.dx, e.dy, e.vx, e.vy || 0, KIND_CODE[e.kind] || 0] : [FAR, FAR, 0, 0, -1]));
     }
+    // Seconds until the gap closes, when it closes at all.
+    const soon = (gap, closing) => (closing > 1 && gap / closing < 10 ? gap / closing : FAR);
+    const e = near[0];
+    out.push(e ? soon(Math.abs(e.dx), -Math.sign(e.dx) * ((e.vx || 0) - b.vx)) : FAR,
+             e ? soon(Math.abs(e.dy), -Math.sign(e.dy) * ((e.vy || 0) - b.vy)) : FAR);
     return out;
   }
 

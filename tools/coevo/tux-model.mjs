@@ -20,7 +20,8 @@
 //
 //   node tools/coevo/tux-model.mjs --teacher <table> --name <model> [--ai off,coevo5,table:<badguy>]
 //        [--noisy coevo5] [--noise 0.03] [--noise-seeds 1,2,3] [--delays 0,2] [--iterations 20]
-//        [--turbo 80] [--beam 12] [--depth 8] [--react 1]
+//        [--turbo 80] [--beam 12] [--depth 8] [--react 1] [--demos demos-<earlier>.json] [--max-search 8]
+//        [--heldout-ai coevo5] [--heldout-delays 4,5] [--heldout-noise-seeds 21,22]
 //
 // First the teacher, one of Tux's tables, plays every run and what it did
 // before failing (or all of it, where it got to the goal) is what the model
@@ -70,6 +71,18 @@ const cases = [
   ...ais.flatMap((ai) => delays.map((delay) => ({ ai, delay, seed: 1 }))),
   ...noisyAis.flatMap((ai) => noiseSeeds.map((seed) => ({ ai: ai + "~", delay: 0, seed }))),
 ];
+// Runs never learned from, to tell a model that has learned to play from
+// one that has learned these runs by heart: the best is the one that does
+// best on these. --heldout-ai kinds (of --ai) with --heldout-delays, and
+// the noisy kinds with --heldout-noise-seeds.
+const heldoutAis = (args["heldout-ai"] || "").split(",").filter(Boolean);
+const heldout = [
+  ...heldoutAis.flatMap((ai) => (args["heldout-delays"] || "").split(",").filter(Boolean)
+    .map((delay) => ({ ai, delay: Number(delay), seed: 1 }))),
+  ...noisyAis.flatMap((ai) => (args["heldout-noise-seeds"] || "").split(",").filter(Boolean)
+    .map((seed) => ({ ai: ai + "~", delay: 0, seed: Number(seed) }))),
+];
+const MAX_SEARCH = Number(args["max-search"] || 8);  // failures searched past each iteration
 const label = (c) => `${c.ai}${c.delay ? "+" + c.delay : ""}${c.ai.endsWith("~") ? "/" + c.seed : ""}`;
 
 // --- pages ------------------------------------------------------------------
@@ -106,7 +119,8 @@ for (const kind of pageKinds) {
 }
 
 /** Plays every run with a policy (a table or a model); [{ case, result }]. */
-async function playAll(policy) {
+async function playAll(policy, cases_ = cases) {
+  const cases = cases_;
   const out = new Array(cases.length);
   await Promise.all(pageKinds.map(async (kind) => {
     for (let i = 0; i < cases.length; i++) {
@@ -154,6 +168,9 @@ const addPairs = (pairs, weight) => {
   for (const p of pairs) if (p[4]) rows.push([p[4], p[1], weight]);
 };
 
+// --demos: what earlier runs of this learned from, to start with.
+for (const path of (args.demos || "").split(",").filter(Boolean))
+  rows.push(...JSON.parse(await readFile(join(here, path), "utf8")).rows);
 const teacher = parse(await readFile(join(tablesDir, `${args.teacher}.js`), "utf8"));
 const teacherRuns = await playAll({ packed: teacher.packed, extra: teacher.extra, delta: teacher.delta || {},
                                     react: !!teacher.react });
@@ -174,31 +191,43 @@ for (let iteration = 1; iteration <= ITERATIONS; iteration++) {
   const runs = await playAll(model);
   const score = runs.reduce((sum, { result: r }) => sum + far(r), 0);
   console.log(`iteration ${iteration}: ${summary(runs)}`);
-  if (!best || score > best.score) {
-    best = { score, iteration };
+  const held = heldout.length ? await playAll(model, heldout) : [];
+  const heldScore = held.reduce((sum, { result: r }) => sum + far(r), 0);
+  if (held.length)
+    console.log(`iteration ${iteration}: held out: ${summary(held)} (${held.filter((h) => h.result.reached).length}/${held.length} to the goal)`);
+  const judged = held.length ? heldScore * 1e6 + score : score;
+  if (!best || judged > best.score) {
+    best = { score: judged, iteration };
     await writeFile(join(tablesDir, `${args.name}.json`), JSON.stringify(model));
   }
   const failing = runs.filter(({ result: r }) => !r.reached);
   if (!failing.length) {
     console.log(`iteration ${iteration}: every run gets to the goal`);
-    break;
+    if (!held.length) break;
+    continue;
   }
-  // Ways on from where the model failed, found by search, to learn from.
+  // Ways on from where the model failed, found by search, to learn from:
+  // the runs that got least far, one search at a time on each kind's page.
+  const chosen = failing.sort((a, b) => a.result.maxX - b.result.maxX).slice(0, MAX_SEARCH);
+  const byKind = new Map();
+  for (const run of chosen) byKind.set(run.c.ai, [...(byKind.get(run.c.ai) || []), run]);
   let added = 0;
-  for (const { c, result: r } of failing) {
-    const moves = r.pairs.map((p) => p[1]);
-    const reachedAt = r.pairs.findIndex((p) => p[2] >= r.maxX - 48);
-    const upTo = reachedAt < 0 ? moves.length : reachedAt + 1;
-    for (const back of BACK_OFF) {
-      if (upTo - back < 0) continue;
-      const found = await searchFrom(c, moves.slice(0, upTo - back), Math.min(GOAL, r.maxX + AHEAD));
-      if (found) {
-        addPairs(found, 3);
-        added += found.length;
-        break;
+  await Promise.all([...byKind.values()].map(async (list) => {
+    for (const { c, result: r } of list) {
+      const moves = r.pairs.map((p) => p[1]);
+      const reachedAt = r.pairs.findIndex((p) => p[2] >= r.maxX - 48);
+      const upTo = reachedAt < 0 ? moves.length : reachedAt + 1;
+      for (const back of BACK_OFF) {
+        if (upTo - back < 0) continue;
+        const found = await searchFrom(c, moves.slice(0, upTo - back), Math.min(GOAL, r.maxX + AHEAD));
+        if (found) {
+          addPairs(found, 3);
+          added += found.length;
+          break;
+        }
       }
     }
-  }
+  }));
   console.log(`iteration ${iteration}: ${added} moves found past failures, ${rows.length} rows`);
   if (!added) break;
 }

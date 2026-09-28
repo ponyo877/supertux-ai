@@ -16,7 +16,7 @@
 
 """Learns a model of Tux from demonstrations (tux-model.mjs).
 
-    uv run --project tools/distill python tools/coevo/fit_tux.py demos.json model.json
+    uv run --project tools/distill python tools/coevo/fit_tux.py demos.json model.json [--drop x,y]
 
 demos.json: {"features": [...names], "rows": [[[f1, f2, ...], move, weight], ...]},
 the numbers Tux looked at (player-facts.js FEATURES) and the move made there.
@@ -68,13 +68,20 @@ def main():
         demos = json.load(f)
     rows = demos["rows"]
     x = np.array([r[0] for r in rows], dtype=float)
+    # --drop x,y: features the model may not use (set to 0 everywhere), e.g.
+    # where in the level Tux is, so it cannot learn a way by heart.
+    dropped = []
+    if "--drop" in sys.argv:
+        dropped = [demos["features"].index(n) for n in sys.argv[sys.argv.index("--drop") + 1].split(",")]
+    zone_x = x[:, demos["features"].index("x")].copy()
     moves_seen = sorted({r[1] for r in rows})
     code = {m: i for i, m in enumerate(moves_seen)}
     y = np.array([code[r[1]] for r in rows])
     base = np.array([r[2] if len(r) > 2 else 1.0 for r in rows], dtype=float)
 
-    x_col = demos["features"].index("x")
-    zones = (x[:, x_col] // ZONE).astype(int)
+    zones = (zone_x // ZONE).astype(int)
+    for col in dropped:
+        x[:, col] = 0.0
     by_move = Counter(y.tolist())
     by_zone = Counter(zones.tolist())
     w = base / np.sqrt(np.array([by_move[m] * by_zone[z] for m, z in zip(y, zones)], dtype=float))
