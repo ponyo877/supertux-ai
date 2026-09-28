@@ -202,7 +202,10 @@
     return out;
   }
 
-  /** The move a learned model (as fit_tux.py exports it) makes for a look. */
+  /** The move a learned model (as fit_tux.py exports it) makes for a look:
+      the likeliest, or with model.temperature one drawn by the model's
+      odds (softmax of its scores at that temperature), and with
+      model.epsilon now and then any move (tux-rl.mjs, trying things). */
   function modelMove(model, b) {
     const f = features(b);
     const scores = new Array(model.classes).fill(0);
@@ -216,6 +219,14 @@
         node = f[feature] <= threshold ? left : right;
       }
       scores[t % model.classes] += tree.leaves[-node - 1];
+    }
+    if (model.epsilon && Math.random() < model.epsilon)
+      return model.moves[Math.floor(Math.random() * model.moves.length)];
+    if (model.temperature) {
+      const top = Math.max(...scores);
+      const odds = scores.map((s) => Math.exp((s - top) / model.temperature));
+      let r = Math.random() * odds.reduce((a, c) => a + c, 0);
+      for (let c = 0; c < odds.length; c++) if ((r -= odds[c]) <= 0) return model.moves[c];
     }
     let best = 0;
     for (let c = 1; c < scores.length; c++) if (scores[c] > scores[best]) best = c;

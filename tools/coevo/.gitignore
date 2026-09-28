@@ -5,6 +5,7 @@ stats-*.json
 rows-*.json
 fit-*.json
 demos-*.json
+samples-*.json
 results.json
 # Every generation of training; only the distilled Tux is kept.
 tables/*
@@ -20,3 +21,4 @@ tables/*
 !tables/tux-x1.json
 !tables/tux-h15.js
 !tables/enemy-h16.js
+__pycache__/
