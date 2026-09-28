@@ -38,7 +38,7 @@
   const REFRESH_MS = 60000;
   const params = new URLSearchParams(location.search);
   const mode = params.get("ai") || "off";
-  const LABELS = { off: "Classic", coevo5: "Trained AI", coevo4: "Trained AI (earlier)", "laya-rich": "Laya AI" };
+  const LABELS = { off: "Classic", coevo6: "Trained AI", coevo5: "Trained AI (earlier)", coevo4: "Trained AI (first)", "laya-rich": "Laya AI" };
   const label = LABELS[mode] || mode;
 
   let server = { attempts: 0, deaths: 0, clears: 0 };

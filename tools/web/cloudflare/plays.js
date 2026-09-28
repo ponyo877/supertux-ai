@@ -27,7 +27,7 @@
 
 import { verify } from "./verify.js";
 
-export const MODES = new Set(["off", "coevo5", "coevo4", "coevo3", "coevo2", "coevo", "rl2", "rl", "llm", "laya-rich", "laya"]);
+export const MODES = new Set(["off", "coevo6", "coevo5", "coevo4", "coevo3", "coevo2", "coevo", "rl2", "rl", "llm", "laya-rich", "laya"]);
 export const TOKEN_LIFE_MS = 60 * 60 * 1000;
 export const MAX_BODY = 512 * 1024;
 const CLOCK_SLACK_MS = 3000;  // the token comes a moment after the path starts

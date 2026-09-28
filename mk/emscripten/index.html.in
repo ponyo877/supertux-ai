@@ -232,8 +232,8 @@
       <section class="mode trained">
         <h2>Trained AI <span class="tag">self-play</span></h2>
         <p>Enemies that learned their tactics by playing against a Tux that learned too.</p>
-        <a class="start" href="play.html?ai=coevo5">START</a>
-        <p class="count" data-mode="coevo5"></p>
+        <a class="start" href="play.html?ai=coevo6">START</a>
+        <p class="count" data-mode="coevo6"></p>
       </section>
     </div>
 

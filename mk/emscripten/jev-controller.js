@@ -418,6 +418,21 @@
       decideSync: lookUpPolicy("coevo5"),
     },
 
+    // Of the badguys of that co-evolution, the ones that stop the learned
+    // Tuxes soonest (enemy-h13: against tux-s1, tux-h15, tux-r1 and tux-x1
+    // starting 0 to 3 waits late, as few get through as against coevo5,
+    // and those that do not fall about 1,300 px sooner).
+    coevo6: {
+      sendInterval: 0.05,
+      options: richOptions,
+      minConfidence: {},
+      buildQuestions: () => ({}),
+      shield: false,
+      decide: lookUpPolicy("coevo6"),
+      table: "coevo6",
+      decideSync: lookUpPolicy("coevo6"),
+    },
+
     // Laya running on this Mac's GPU through laya-mlx (tools/laya-server),
     // e.g. to try a changed prompt before exporting the table; ?prompt=rich
     // for the rich one. It answers in ~20 ms, so it could take a fresh state

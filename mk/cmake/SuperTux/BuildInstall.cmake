@@ -68,7 +68,7 @@ endif()
 
 if(EMSCRIPTEN)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mk/emscripten/template.html.in ${CMAKE_CURRENT_BINARY_DIR}/template.html)
-  foreach(script jev-controller.js stats.js headstone.png og.png laya-prompt.js laya-table.js laya-rich-prompt.js laya-rich-table.js llm-table.js rl-table.js rl2-table.js coevo-table.js coevo2-table.js coevo3-table.js coevo4-table.js coevo5-table.js)
+  foreach(script jev-controller.js stats.js headstone.png og.png laya-prompt.js laya-table.js laya-rich-prompt.js laya-rich-table.js llm-table.js rl-table.js rl2-table.js coevo-table.js coevo2-table.js coevo3-table.js coevo4-table.js coevo5-table.js coevo6-table.js)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mk/emscripten/${script} ${CMAKE_CURRENT_BINARY_DIR}/${script} COPYONLY)
   endforeach()
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/mk/emscripten/supertux2.png ${CMAKE_CURRENT_BINARY_DIR}/supertux2.png COPYONLY)

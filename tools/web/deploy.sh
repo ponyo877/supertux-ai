@@ -42,7 +42,7 @@ mkdir -p "$dist"
 for file in index.html play.html credits.html \
             LICENSE.txt AUTHORS.txt supertux-credits.txt third-party-licenses.txt \
             supertux2.js supertux2.wasm supertux2.png supertux2_bkg.png supertux2.ico \
-            jev-controller.js stats.js headstone.png og.png laya-prompt.js laya-table.js laya-rich-prompt.js laya-rich-table.js llm-table.js rl-table.js rl2-table.js coevo-table.js coevo2-table.js coevo3-table.js coevo4-table.js coevo5-table.js; do
+            jev-controller.js stats.js headstone.png og.png laya-prompt.js laya-table.js laya-rich-prompt.js laya-rich-table.js llm-table.js rl-table.js rl2-table.js coevo-table.js coevo2-table.js coevo3-table.js coevo4-table.js coevo5-table.js coevo6-table.js; do
   cp "$build/$file" "$dist/"
 done
 
