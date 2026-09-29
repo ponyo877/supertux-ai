@@ -245,7 +245,7 @@
       (one level without checkpoints, enemies trained by reinforcement learning; the page counts everyone&rsquo;s
       attempts and deaths anonymously). It comes with ABSOLUTELY NO WARRANTY. It is free software, and you
       are welcome to redistribute it under the GNU General Public License version 3:
-      <a href="LICENSE.txt">license</a>, <a href="https://github.com/ponyo877/typesafe-supertux">source code</a>.</p>
+      <a href="LICENSE.txt">license</a>, <a href="https://github.com/ponyo877/supertux-ai">source code</a>.</p>
     <p>Level &ldquo;Shallow Green&rdquo; by Carsten Wirtz and music &ldquo;Forest Midday&rdquo; by SnugglyBun and Marek Moeckel, both
       <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. The enemies&rsquo; first tactics were
       labeled by Claude (Anthropic), then learned by playing; earlier modes used answers precomputed with Laya by
